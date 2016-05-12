@@ -17,7 +17,6 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
 
     scrollDistance = null
     scrollEnabled = null
-    checkWhenEnabled = null
     container = null
     immediateCheck = true
     useDocumentBottom = false
@@ -63,17 +62,13 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
       remaining = elementBottom - containerBottom
       shouldScroll = remaining <= height(container) * scrollDistance + 1
 
-      if shouldScroll
-        checkWhenEnabled = true
-
-        if scrollEnabled
-          if scope.$$phase || $rootScope.$$phase
-            scope.infiniteScroll()
-          else
-            scope.$apply(scope.infiniteScroll)
-      else
-        if checkInterval then $interval.cancel checkInterval
-        checkWhenEnabled = false
+      if shouldScroll and scrollEnabled
+        if scope.$$phase || $rootScope.$$phase
+          scope.infiniteScroll()
+        else
+          scope.$apply(scope.infiniteScroll)
+      else if checkInterval
+        $interval.cancel checkInterval
 
     # The optional THROTTLE_MILLISECONDS configuration value specifies
     # a minimum time that should elapse between each call to the
@@ -131,8 +126,7 @@ mod.directive 'infiniteScroll', ['$rootScope', '$window', '$interval', 'THROTTLE
     # will be triggered again.
     handleInfiniteScrollDisabled = (v) ->
       scrollEnabled = !v
-      if scrollEnabled && checkWhenEnabled
-        checkWhenEnabled = false
+      if scrollEnabled
         handler()
 
     scope.$watch 'infiniteScrollDisabled', handleInfiniteScrollDisabled
